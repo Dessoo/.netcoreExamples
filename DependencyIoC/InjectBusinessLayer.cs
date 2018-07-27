@@ -1,4 +1,5 @@
 ﻿using BusinessLayer;
+using BusinessLayer.BackgroundServices.Queue;
 using BusinessLayer.Core;
 using BusinessLayer.DTO;
 using BusinessLayer.Interfaces;
@@ -42,6 +43,9 @@ namespace DependencyIoC
             services.AddScoped<ICacheService>(s => new CacheService(serviceResolver.GetService<IMemoryCache>()));
             services.AddScoped<IUserService>(s => 
                             new UserService(serviceResolver.GetService<IUserRepository>(), services.BuildServiceProvider().GetService<ILogProvider>()));
+
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            services.AddHostedService<QueuedHostedService>();     
         }
     }
 }

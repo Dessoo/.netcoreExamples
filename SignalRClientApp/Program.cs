@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using Shared.Models;
 using System;
-using System.Threading.Tasks;
 
 namespace SignalRClientApp
 {
@@ -11,7 +11,7 @@ namespace SignalRClientApp
         {
             string email = "test.testov@bul.bg";
             string userName = "Test Testov";
-            string authToken = "this!is!test!Token1";
+            string authToken = "this!is!test!Token";
 
             var connection = new HubConnectionBuilder()
             .WithUrl($"http://localhost:5000/testHub?Email={email}&UserName={userName}&AuthToken={authToken}", HttpTransportType.WebSockets, options =>
@@ -20,14 +20,15 @@ namespace SignalRClientApp
             })
             .Build();
 
-            connection.On<string>("SomeEvent", ( message) =>
+            connection.On<EventMessage>("SomeEvent", ( message) =>
             {
-                Console.WriteLine($"{message}");
+                Console.WriteLine($"{message.Message}");
             });
-
+            
             try
             {
                 connection.StartAsync();
+               // connection.SendAsync("TestMethod", "Test input message");
             }
             catch (Exception ex)
             {

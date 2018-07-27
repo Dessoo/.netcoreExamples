@@ -15,6 +15,32 @@ namespace SignalRSelfHost.Hubs
 
         private readonly ILogger _logger;
 
+        private string Email
+        {
+            get
+            {
+                return Context.GetHttpContext().Request.Query["Email"].ToString();
+            }
+        }
+
+        private string UserName
+        {
+            get
+            {
+                return Context.GetHttpContext().Request.Query["UserName"].ToString();
+            }
+        }
+
+        private string AuthToken
+        {
+            get
+            {
+                return Context.GetHttpContext().Request.Query["AuthToken"].ToString();
+            }
+        }
+
+        private string ConnectionId { get { return Context.ConnectionId; } }
+
         public BaseHub(IConnectionManager connectionManager, ILogProvider logProvider)
         {
             this._logger = logProvider.CreateLogger<BaseHub<THub>>();
@@ -27,10 +53,6 @@ namespace SignalRSelfHost.Hubs
 
             try
             {           
-                this.Email = httpContext.Request.Query["Email"].ToString();
-                this.UserName = httpContext.Request.Query["UserName"].ToString();
-                this.AuthToken = httpContext.Request.Query["AuthToken"].ToString();
-
                 this._connectionManager.AddConnection(this.HubName, this.ConnectionId, new AuthEntity() { Email = this.Email, UserName = this.UserName, AuthToken = this.AuthToken });
                 this._logger.LogDebug($"Client with connectionId {this.ConnectionId} open chanel to hub {this.HubName}");
                 Console.WriteLine($"Client with connectionId {this.ConnectionId} open chanel to hub {this.HubName}");
@@ -92,14 +114,6 @@ namespace SignalRSelfHost.Hubs
 
                 return string.Empty;
             }
-        }
-
-        private string Email { get; set; }
-
-        private string UserName { get; set; }
-
-        private string AuthToken { get; set; }
-
-        private string ConnectionId { get { return Context.ConnectionId; } }
+        }     
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using BusinessLayer.BackgroundServices.Queue;
 using BusinessLayer.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -8,8 +9,11 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Shared.Models;
+using SignalRSelfHost.BackgroundServices;
 using SignalRSelfHost.Connection;
 using SignalRSelfHost.Hubs;
+using SignalRSelfHost.IoC;
 
 namespace SignalRSelfHost
 {
@@ -33,7 +37,11 @@ namespace SignalRSelfHost
             var host = builder.Build();
             host.RunAsync();
             serviceProvider = host.Services;
+
             Start();
+            
+            Console.Write("Press <Enter> to exit... ");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
         }
 
         static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
@@ -45,18 +53,20 @@ namespace SignalRSelfHost
         static void Start()
         {
             logger.LogInformation($"Self Host SignalR Application Start");
-            var hub = serviceProvider.GetService<IHubContext<TestHub>>();
-            IConnectionManager connectionManager = serviceProvider.GetService<IConnectionManager>();
-            while (true)
-            {
-                List<string> activeConnection = connectionManager.GetActiveConnectionForHub("TestHub");
-                if (activeConnection != null)
-                {
-                    hub.Clients.Clients(activeConnection).SendAsync("SomeEvent", "this is test message");
-                }
 
-                Thread.Sleep(4000);
-            }
+            var messageRepeater = new SignalRMessageRepeaterService(serviceProvider.GetService<IBackgroundTaskQueue>(),
+                                                    serviceProvider.GetService<ILogProvider>(), serviceProvider.GetService<IHubContext<TestHub>>(),
+                                                    serviceProvider.GetService<IConnectionManager>());
+
+            new Thread(() =>
+            {
+                messageRepeater?.Start();
+            }).Start();
+
+            Console.Write("Service Wait 40 seconds ");
+            Thread.Sleep(40000);
+            messageRepeater?.Stop();
+            Console.Write("Service call stop method ");
         }
 
         static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
