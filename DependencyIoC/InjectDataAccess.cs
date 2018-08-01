@@ -15,13 +15,13 @@ namespace DependencyIoC
     {
         public static void Init(IServiceCollection services)
         {
-            services.AddDbContext<TestContext>(options =>options
+            services.AddDbContext<TestContext>(options => options
                 .UseSqlServer(services.BuildServiceProvider().
                                  GetService<IConfiguration>().
                                  GetConnectionString("TestDatabase")));
 
             var serviceResolver = services.BuildServiceProvider();
-        
+
             //start inject repos/uoW??
             services.AddScoped<IUserRepository>(s => new UserRepository(serviceResolver.GetService<TestContext>()));
             services.AddScoped<IEventLogRepository>(s => new EventLogRepository(serviceResolver.GetService<TestContext>()));

@@ -9,6 +9,7 @@ using DataAccess.XmlProvider;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace DependencyIoC
@@ -17,6 +18,9 @@ namespace DependencyIoC
     {
         public static void Init(IServiceCollection services)
         {
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            services.AddHostedService<QueuedHostedService>();
+
             var serviceResolver = services.BuildServiceProvider();
             //resolve instance inject from DB layer inject class
 
@@ -42,10 +46,7 @@ namespace DependencyIoC
 
             services.AddScoped<ICacheService>(s => new CacheService(serviceResolver.GetService<IMemoryCache>()));
             services.AddScoped<IUserService>(s => 
-                            new UserService(serviceResolver.GetService<IUserRepository>(), services.BuildServiceProvider().GetService<ILogProvider>()));
-
-            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-            services.AddHostedService<QueuedHostedService>();     
+                            new UserService(serviceResolver.GetService<IUserRepository>(), services.BuildServiceProvider().GetService<ILogProvider>()));            
         }
     }
 }

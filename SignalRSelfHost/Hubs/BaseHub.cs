@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Core;
+﻿using BusinessLayer.BackgroundServices.Queue;
+using BusinessLayer.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -12,14 +13,14 @@ namespace SignalRSelfHost.Hubs
     public class BaseHub<THub> : Hub where THub : class
     {
         private readonly IConnectionManager _connectionManager;
-
         private readonly ILogger _logger;
+        private readonly IBackgroundTaskQueue _queue;
 
         private string Email
         {
             get
             {
-                return Context.GetHttpContext().Request.Query["Email"].ToString();
+                return base.Context.GetHttpContext().Request.Query["Email"].ToString();
             }
         }
 
@@ -27,7 +28,7 @@ namespace SignalRSelfHost.Hubs
         {
             get
             {
-                return Context.GetHttpContext().Request.Query["UserName"].ToString();
+                return base.Context.GetHttpContext().Request.Query["UserName"].ToString();
             }
         }
 
@@ -35,26 +36,42 @@ namespace SignalRSelfHost.Hubs
         {
             get
             {
-                return Context.GetHttpContext().Request.Query["AuthToken"].ToString();
+                return base.Context.GetHttpContext().Request.Query["AuthToken"].ToString();
             }
         }
 
         private string ConnectionId { get { return Context.ConnectionId; } }
 
-        public BaseHub(IConnectionManager connectionManager, ILogProvider logProvider)
+        public BaseHub(IConnectionManager connectionManager, ILogProvider logProvider, IBackgroundTaskQueue queue)
         {
             this._logger = logProvider.CreateLogger<BaseHub<THub>>();
             this._connectionManager = connectionManager;
+            this._queue = queue;
+        }
+
+        public void TryReconnect()
+        {
+            this._queue.QueueBackgroundWorkItem(async token =>
+            {
+                this._logger.LogDebug($"{nameof(this.TryReconnect)} in {this.HubName} activate for client with ConnectionId {this.ConnectionId}");
+                await Task.CompletedTask;
+            });
+
+            this.Clients.Clients(this.ConnectionId).SendAsync(nameof(this.TryReconnect));
         }
 
         public override async Task OnConnectedAsync()
         {
-            HttpContext httpContext = Context.GetHttpContext();
+            HttpContext httpContext = base.Context.GetHttpContext();
 
             try
             {           
-                this._connectionManager.AddConnection(this.HubName, this.ConnectionId, new AuthEntity() { Email = this.Email, UserName = this.UserName, AuthToken = this.AuthToken });
-                this._logger.LogDebug($"Client with connectionId {this.ConnectionId} open chanel to hub {this.HubName}");
+                this._connectionManager.AddConnection(this.HubName, this.ConnectionId, new AuthEntity() { Email = this.Email, UserName = this.UserName, AuthToken = this.AuthToken });               
+                this._queue.QueueBackgroundWorkItem(async token =>
+                {
+                    this._logger.LogDebug($"Client with connectionId {this.ConnectionId} open chanel to hub {this.HubName}");
+                    await Task.CompletedTask;
+                });
                 Console.WriteLine($"Client with connectionId {this.ConnectionId} open chanel to hub {this.HubName}");
                 await base.OnConnectedAsync();
             }
@@ -74,7 +91,12 @@ namespace SignalRSelfHost.Hubs
             try
             {
                 this._connectionManager.DeleteConnection(this.HubName, this.ConnectionId);
-                this._logger.LogDebug($"Client with connectionId {this.ConnectionId} close chanel to hub {this.HubName}");
+                this._queue.QueueBackgroundWorkItem(async token =>
+                {
+                    this._logger.LogDebug($"Client with connectionId {this.ConnectionId} close chanel to hub {this.HubName}");
+                    await Task.CompletedTask;
+                });
+                
                 Console.WriteLine($"Client with connectionId {this.ConnectionId} close chanel to hub {this.HubName}");
                 await base.OnDisconnectedAsync(ex);
             }

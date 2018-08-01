@@ -12,18 +12,13 @@ namespace BusinessLayer.BackgroundServices.Queue
 
         public void QueueBackgroundWorkItem(Func<CancellationToken, Task> workItem)
         {
-            new Thread(() =>
+            if (workItem == null)
             {
-                Thread.CurrentThread.IsBackground = true;
-                if (workItem == null)
-                {
-                    throw new ArgumentNullException(nameof(workItem));
-                }
+                throw new ArgumentNullException(nameof(workItem));
+            }
 
-                this._workItems.Enqueue(workItem);
-                this._signal.Release();
-
-            }).Start();  
+            this._workItems.Enqueue(workItem);
+            this._signal.Release();
         }
 
         public async Task<Func<CancellationToken, Task>> DequeueAsync(CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Core;
+﻿using BusinessLayer.BackgroundServices.Queue;
+using BusinessLayer.Core;
 using Microsoft.Extensions.Logging;
 using SignalRSelfHost.Connection;
 using SignalRSelfHost.Infrastructure;
@@ -10,7 +11,7 @@ namespace SignalRSelfHost.Hubs
     {
         private readonly ILogger _logger;
 
-        public TestHub(IConnectionManager connectionManager, ILogProvider logProvider) : base(connectionManager, logProvider)
+        public TestHub(IConnectionManager connectionManager, ILogProvider logProvider, IBackgroundTaskQueue queue) : base(connectionManager, logProvider, queue)
         {
             this._logger = logProvider.CreateLogger<TestHub>();      
         }

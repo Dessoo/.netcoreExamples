@@ -1,8 +1,11 @@
-﻿using BusinessLayer.DTO;
+﻿using BusinessLayer.BackgroundServices.Queue;
+using BusinessLayer.DTO;
 using DataAccess.Interfaces;
 using DataAccess.Models;
 using DataAccess.XmlProvider;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace BusinessLayer.Core
 {
@@ -35,7 +38,7 @@ namespace BusinessLayer.Core
 
         public void Dispose()
         {
-            this.Dispose();
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using BusinessLayer.BackgroundServices.Queue;
 using BusinessLayer.Core;
 using Microsoft.AspNetCore;
@@ -21,7 +22,7 @@ namespace SignalRSelfHost
     {
         private static IServiceProvider serviceProvider { get; set; }
 
-        private static ILogger logger
+        private static ILogger Logger
         {
             get
             {
@@ -30,9 +31,19 @@ namespace SignalRSelfHost
             }
         }
 
+        private static IBackgroundTaskQueue Queue
+        {
+            get
+            {
+                return serviceProvider.GetService<IBackgroundTaskQueue>();
+            }
+        }
+
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
             var builder = CreateWebHostBuilder(args);
             var host = builder.Build();
             host.RunAsync();
@@ -46,27 +57,33 @@ namespace SignalRSelfHost
 
         static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {         
-            logger.LogCritical(e.ExceptionObject.ToString());
+            Logger.LogCritical(e.ExceptionObject.ToString());
             Console.WriteLine(e.ExceptionObject.ToString());
         }
 
-        static void Start()
+        static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            logger.LogInformation($"Self Host SignalR Application Start");
-
             var messageRepeater = new SignalRMessageRepeaterService(serviceProvider.GetService<IBackgroundTaskQueue>(),
                                                     serviceProvider.GetService<ILogProvider>(), serviceProvider.GetService<IHubContext<TestHub>>(),
                                                     serviceProvider.GetService<IConnectionManager>());
 
-            new Thread(() =>
-            {
-                messageRepeater?.Start();
-            }).Start();
-
-            Console.Write("Service Wait 40 seconds ");
-            Thread.Sleep(40000);
             messageRepeater?.Stop();
-            Console.Write("Service call stop method ");
+        }
+
+        static void Start()
+        {
+            Queue.QueueBackgroundWorkItem(async token =>
+            {
+                Logger.LogInformation($"Self Host SignalR Application Start");
+                await Task.CompletedTask;
+            });
+           
+            var messageRepeater = new SignalRMessageRepeaterService(serviceProvider.GetService<IBackgroundTaskQueue>(),
+                                                    serviceProvider.GetService<ILogProvider>(), serviceProvider.GetService<IHubContext<TestHub>>(),
+                                                    serviceProvider.GetService<IConnectionManager>());
+
+
+            messageRepeater?.Start();
         }
 
         static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

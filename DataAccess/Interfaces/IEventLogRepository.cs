@@ -1,4 +1,5 @@
 ﻿using DataAccess.Models;
+using System.Threading.Tasks;
 
 namespace DataAccess.Interfaces
 {
@@ -6,6 +7,6 @@ namespace DataAccess.Interfaces
     {
         void Add(EventLog eventLog);
 
-        void AddAsync(EventLog eventLog);
+        Task<int> AddAsync(EventLog eventLog);
     }
 }

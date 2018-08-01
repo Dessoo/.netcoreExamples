@@ -33,25 +33,25 @@ namespace DataAccess.Repositories
         public virtual void Add(TEntity entity)
         {
             this.DbSet.Add(entity);
-            _context.SaveChanges();
+            this._context.SaveChanges();
         }
 
-        public virtual async void AddAsync(TEntity entity)
+        public virtual Task<int> AddAsync(TEntity entity)
         {
-            this.DbSet.Add(entity);
-            await _context.SaveChangesAsync();
+            this._context.Add(entity);
+            return this._context.SaveChangesAsync();
         }
 
         public void AddRange(IEnumerable<TEntity> entities)
         {
             this.DbSet.AddRange(entities);
-            _context.SaveChanges();
+            this._context.SaveChanges();
         }
 
         public virtual void Delete(TEntity entity)
         {
             this.DbSet.Remove(entity);
-            _context.SaveChanges();
+            this._context.SaveChanges();
         }
 
         public virtual TEntity GetById(long id)
@@ -64,8 +64,8 @@ namespace DataAccess.Repositories
         public virtual void Update(TEntity entity)
         {
             this.DbSet.Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
-            _context.SaveChanges();
+            this._context.Entry(entity).State = EntityState.Modified;
+            this._context.SaveChanges();
         }
     }
 }

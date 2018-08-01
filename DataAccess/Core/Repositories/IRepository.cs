@@ -22,7 +22,7 @@ namespace DataAccess.Core.Repositories
         /// Adds async the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        void AddAsync(TEntity entity);
+        Task<int> AddAsync(TEntity entity);
         
         /// <summary>
         /// Add collection of entites

@@ -1,5 +1,4 @@
 ﻿using BusinessLayer.Core;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
@@ -7,33 +6,25 @@ using System.Threading.Tasks;
 
 namespace BusinessLayer.BackgroundServices.Queue
 {
-    public class QueuedHostedService : IHostedService
+    public class QueuedHostedService : BackgroundQueueService
     {
         private readonly ILogger _logger;
 
         public QueuedHostedService(IBackgroundTaskQueue taskQueue, ILogProvider logProvider)
         {
-            TaskQueue = taskQueue;
-            _logger = logProvider.CreateLogger<QueuedHostedService>();
+            this.TaskQueue = taskQueue;
+            this._logger = logProvider.CreateLogger<QueuedHostedService>();
         }
 
         public IBackgroundTaskQueue TaskQueue { get; }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        protected async override Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation(
-            "Consume Scoped Service Hosted Service is stopping.");
-
-            return Task.CompletedTask;
-        }
-
-        async Task IHostedService.StartAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Queued Hosted Service is starting.");
+            this._logger.LogInformation("Queued Hosted Service is starting.");
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var workItem = await TaskQueue.DequeueAsync(cancellationToken);
+                var workItem = await this.TaskQueue.DequeueAsync(cancellationToken);
 
                 try
                 {
@@ -41,11 +32,11 @@ namespace BusinessLayer.BackgroundServices.Queue
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Error occurred executing {nameof(workItem)}.");
+                    this._logger.LogError(ex, $"Error occurred executing {nameof(workItem)}.");
                 }
             }
 
-            _logger.LogInformation("Queued Hosted Service is stopping.");
+            this._logger.LogInformation("Queued Hosted Service is stopping.");
         }
     }
 }

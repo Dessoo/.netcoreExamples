@@ -12,13 +12,15 @@ namespace SignalRClientApp
             string email = "test.testov@bul.bg";
             string userName = "Test Testov";
             string authToken = "this!is!test!Token";
+            string endPointUrl = $"http://localhost:5000/testHub?Email={email}&UserName={userName}&AuthToken={authToken}";
 
             var connection = new HubConnectionBuilder()
-            .WithUrl($"http://localhost:5000/testHub?Email={email}&UserName={userName}&AuthToken={authToken}", HttpTransportType.WebSockets, options =>
+            .WithUrl(endPointUrl, HttpTransportType.WebSockets, options =>
             {
                 options.SkipNegotiation = false;
             })
-            .Build();
+            .Build()
+            .RetryConnect();
 
             connection.On<EventMessage>("SomeEvent", ( message) =>
             {
@@ -28,7 +30,7 @@ namespace SignalRClientApp
             try
             {
                 connection.StartAsync();
-               // connection.SendAsync("TestMethod", "Test input message");
+                // connection.SendAsync("TestMethod", "Test input message");
             }
             catch (Exception ex)
             {
