@@ -1,9 +1,5 @@
-﻿using BusinessLayer.Core;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +15,7 @@ namespace BusinessLayer.BackgroundServices.Queue
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return this.ExecuteAsync(cancellationToken);
         }
 
         protected abstract Task ExecuteAsync(CancellationToken cancellationToken);

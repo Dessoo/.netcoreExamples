@@ -54,7 +54,7 @@ namespace DataAccess.Repositories
             this._context.SaveChanges();
         }
 
-        public virtual TEntity GetById(long id)
+        public virtual TEntity GetById(int id)
         {
             var entity = this.DbSet.Find(id);
 

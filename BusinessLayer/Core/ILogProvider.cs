@@ -6,6 +6,8 @@ namespace BusinessLayer.Core
     {
         ILogger<TCategoryName> CreateLogger<TCategoryName>() where TCategoryName : class;
 
+        bool UseQueue { get; set; }
+
         void Dispose();
     }
 }

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="SsiServerDto">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerDto.dll</HintPath>
+    </Reference>
+    <Reference Include="SsiServerPluginContracts">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerPluginContracts.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

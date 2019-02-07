@@ -15,10 +15,13 @@ namespace DependencyIoC
     {
         public static void Init(IServiceCollection services)
         {
+            var configuration = services.BuildServiceProvider().
+                                            GetService<IConfiguration>();
+
+            string connectionString = configuration.GetConnectionString("TestDatabase");
+
             services.AddDbContext<TestContext>(options => options
-                .UseSqlServer(services.BuildServiceProvider().
-                                 GetService<IConfiguration>().
-                                 GetConnectionString("TestDatabase")));
+                .UseSqlServer(connectionString));
 
             var serviceResolver = services.BuildServiceProvider();
 

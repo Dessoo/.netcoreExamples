@@ -27,6 +27,8 @@ namespace SignalRSelfHost.Connection
         {
             try
             {
+                this._logger.LogDebug($"Client with connectionId {connectionId} open chanel to hub {hubName}");
+
                 if (!token.Equals(authEntity.AuthToken))
                 {
                     throw new UnauthorizedAccessException(exceptionMessage);

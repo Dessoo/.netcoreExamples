@@ -10,7 +10,7 @@ namespace DataAccess.Core.Repositories
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns> TEntity </returns>
-        TEntity GetById(long id);
+        TEntity GetById(int id);
 
         /// <summary>
         /// Adds the specified entity.

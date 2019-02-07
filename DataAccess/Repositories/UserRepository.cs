@@ -20,9 +20,9 @@ namespace DataAccess.Repositories
             return this.DbSet.ToList();
         }
 
-        public override void Add(User entity)
+        public List<User> GetAllUsersParallel()
         {
-            //custome add
+            return this.DbSet.AsParallel().ToList();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace SignalRSelfHost.Hubs
     {
         private readonly ILogger _logger;
 
-        public TestHub(IConnectionManager connectionManager, ILogProvider logProvider, IBackgroundTaskQueue queue) : base(connectionManager, logProvider, queue)
+        public TestHub(IConnectionManager connectionManager, ILogProvider logProvider) : base(connectionManager, logProvider)
         {
             this._logger = logProvider.CreateLogger<TestHub>();      
         }

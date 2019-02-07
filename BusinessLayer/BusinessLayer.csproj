@@ -16,6 +16,21 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
       <HintPath>..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.extensions.hosting.abstractions\2.0.3\lib\netstandard2.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
     </Reference>
+    <Reference Include="SsiServerCommonUtils">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerCommonUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="SsiServerCommunication">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerCommunication.dll</HintPath>
+    </Reference>
+    <Reference Include="SsiServerDal">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerDal.dll</HintPath>
+    </Reference>
+    <Reference Include="SsiServerDto">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerDto.dll</HintPath>
+    </Reference>
+    <Reference Include="SsiServerPluginContracts">
+      <HintPath>..\..\..\..\Desktop\ancora\WrapperReference\SsiServerPluginContracts.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

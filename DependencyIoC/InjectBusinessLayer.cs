@@ -1,4 +1,5 @@
 ﻿using BusinessLayer;
+using BusinessLayer.Ancora;
 using BusinessLayer.BackgroundServices.Queue;
 using BusinessLayer.Core;
 using BusinessLayer.DTO;
@@ -9,6 +10,7 @@ using DataAccess.XmlProvider;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -18,10 +20,9 @@ namespace DependencyIoC
     {
         public static void Init(IServiceCollection services)
         {
-            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-            services.AddHostedService<QueuedHostedService>();
-
+   
             var serviceResolver = services.BuildServiceProvider();
+            IBackgroundTaskQueue queue = new BackgroundTaskQueue();
             //resolve instance inject from DB layer inject class
 
             HostInformationDTO hostInformation = new HostInformationDTO(
@@ -42,11 +43,19 @@ namespace DependencyIoC
             services.AddScoped<ILogProvider>(s => new LogProvider(serviceResolver.GetService<IEventLogRepository>(),
                                                                             serviceResolver.GetService<IXmlDataProvider<EventLog>>(),
                                                                             hostInformation,
-                                                                            loggerSettings));
-
+                                                                            loggerSettings,
+                                                                            queue));
+          
+            services.AddSingleton(queue);
+            //services.AddSingleton<IHostedService>(s => new QueuedHostedService(queue, services.BuildServiceProvider().GetService<ILogProvider>()));
             services.AddScoped<ICacheService>(s => new CacheService(serviceResolver.GetService<IMemoryCache>()));
             services.AddScoped<IUserService>(s => 
-                            new UserService(serviceResolver.GetService<IUserRepository>(), services.BuildServiceProvider().GetService<ILogProvider>()));            
+                            new UserService(serviceResolver.GetService<IUserRepository>(), 
+                                            services.BuildServiceProvider().GetService<ILogProvider>(),
+                                            queue));
+
+            //add ancora wrapper 
+            services.AddSingleton(s => new AncoraWrapper());
         }
     }
 }

@@ -18,21 +18,29 @@ namespace BusinessLayer.Core
         private readonly HostInformationDTO _hostInformation;
         private readonly LoggerSettingsDTO _loggerSettings;
         private readonly IXmlDataProvider<EventLog> _xmlEventLogRepository;
+        private readonly IBackgroundTaskQueue _queue;
+
+        public bool UseQueue
+        {
+            get;set;
+        }
 
         public LogProvider(IEventLogRepository eventLogRepository,
                                         IXmlDataProvider<EventLog> xmlEventLogRepository,
                                         HostInformationDTO hostInformation,
-                                        LoggerSettingsDTO loggerSettings)
+                                        LoggerSettingsDTO loggerSettings,
+                                        IBackgroundTaskQueue queue)
         {
             this._eventLogRepository = eventLogRepository;
             this._hostInformation = hostInformation;
             this._loggerSettings = loggerSettings;
             this._xmlEventLogRepository = xmlEventLogRepository;
+            this._queue = queue;
         }
 
         public ILogger<TCategoryName> CreateLogger<TCategoryName>() where TCategoryName : class
         {
-            ILogger<TCategoryName> logger = new Logger<TCategoryName>(this._eventLogRepository, this._xmlEventLogRepository, this._hostInformation, this._loggerSettings);
+            ILogger<TCategoryName> logger = new Logger<TCategoryName>(this._eventLogRepository, this._xmlEventLogRepository, this._hostInformation, this._loggerSettings, this._queue, this.UseQueue);
             return logger;
         }
 

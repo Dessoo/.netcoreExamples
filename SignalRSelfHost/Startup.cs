@@ -26,7 +26,7 @@ namespace SignalRSelfHost
         {
             services.AddResponseCompression();
             services.AddSignalR();         
-            services.AddSingleton(Configuration);
+            services.AddSingleton(this.Configuration);
           
             DependencyIoC.InjectDataAccess.Init(services);
             DependencyIoC.InjectBusinessLayer.Init(services);

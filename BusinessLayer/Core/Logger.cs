@@ -19,16 +19,22 @@ namespace BusinessLayer.Core
         private readonly HostInformationDTO _hostInformation;
         private readonly LoggerSettingsDTO _loggerSettings;
         private readonly IXmlDataProvider<EventLog> _xmlEventLogRepository;
+        private readonly IBackgroundTaskQueue _queue;
+        private readonly bool _useQueue;
 
         public Logger(IEventLogRepository eventLogRepository,
                                 IXmlDataProvider<EventLog> xmlEventLogRepository,
                                 HostInformationDTO hostInformation,
-                                LoggerSettingsDTO loggerSettings)
+                                LoggerSettingsDTO loggerSettings,
+                                IBackgroundTaskQueue queue,
+                                bool useQueue)
         {
             this._eventLogRepository = eventLogRepository;
             this._hostInformation = hostInformation;
             this._loggerSettings = loggerSettings;
             this._xmlEventLogRepository = xmlEventLogRepository;
+            this._queue = queue;
+            this._useQueue = useQueue;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
@@ -70,18 +76,51 @@ namespace BusinessLayer.Core
                     Server = _hostInformation.Server
                 };
 
-                switch (_loggerSettings.StorageType)
+                switch (this._loggerSettings.StorageType)
                 {
                     case LoggerStorageTypes.Database:
-                        this._eventLogRepository.Add(logEntity);
+                        if (this._useQueue)
+                        {
+                            this._queue.QueueBackgroundWorkItem(async token =>
+                            {
+                                this._eventLogRepository.Add(logEntity);
+                                await Task.CompletedTask;
+                            });
+                        }
+                        else
+                        {
+                            this._eventLogRepository.Add(logEntity);
+                        }             
                         break;
 
                     case LoggerStorageTypes.Xml:
-                        this._xmlEventLogRepository.Add(logEntity);
+                        if (this._useQueue)
+                        {
+                            this._queue.QueueBackgroundWorkItem(async token =>
+                            {
+                                this._xmlEventLogRepository.Add(logEntity);
+                                await Task.CompletedTask;
+                            });
+                        }
+                        else
+                        {
+                            this._xmlEventLogRepository.Add(logEntity);
+                        }   
                         break;
 
                     default:
-                        this._eventLogRepository.Add(logEntity);
+                        if (this._useQueue)
+                        {
+                            this._queue.QueueBackgroundWorkItem(async token =>
+                            {
+                                this._eventLogRepository.Add(logEntity);
+                                await Task.CompletedTask;
+                            });
+                        }
+                        else
+                        {
+                            this._eventLogRepository.Add(logEntity);
+                        }
                         break;
                 }
             }

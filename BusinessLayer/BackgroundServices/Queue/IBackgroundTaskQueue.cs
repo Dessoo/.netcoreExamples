@@ -19,5 +19,7 @@ namespace BusinessLayer.BackgroundServices.Queue
         /// <returns></returns>
         Task<Func<CancellationToken, Task>> DequeueAsync(
             CancellationToken cancellationToken);
+
+        bool IsEmpty { get; }
     }
 }

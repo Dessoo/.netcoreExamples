@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "ServiceInstallTestApp": {
+      "commandName": "Project"
+    }
+  }
+}

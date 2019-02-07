@@ -13,6 +13,7 @@ namespace BusinessLayer.BackgroundServices.Queue
         public QueuedHostedService(IBackgroundTaskQueue taskQueue, ILogProvider logProvider)
         {
             this.TaskQueue = taskQueue;
+            logProvider.UseQueue = false;
             this._logger = logProvider.CreateLogger<QueuedHostedService>();
         }
 
@@ -32,7 +33,7 @@ namespace BusinessLayer.BackgroundServices.Queue
                 }
                 catch (Exception ex)
                 {
-                    this._logger.LogError(ex, $"Error occurred executing {nameof(workItem)}.");
+                    throw ex;
                 }
             }
 

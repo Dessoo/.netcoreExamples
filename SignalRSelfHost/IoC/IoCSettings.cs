@@ -11,8 +11,9 @@ namespace SignalRSelfHost.IoC
     public static class IoCSettings
     {
         public static void InitIoC(IServiceCollection services)
-        {        
-            services.AddSingleton<IConnectionManager>(new ConnectionManager(services.BuildServiceProvider().GetService<ILogProvider>()));
+        {
+            IConnectionManager connectionManager = new ConnectionManager(services.BuildServiceProvider().GetService<ILogProvider>());
+            services.AddSingleton(connectionManager);
         }
     }
 }

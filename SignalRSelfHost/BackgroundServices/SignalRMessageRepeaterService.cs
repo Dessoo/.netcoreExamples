@@ -33,6 +33,7 @@ namespace SignalRSelfHost.BackgroundServices
 
         public override void Start()
         {
+            this._logger.LogDebug("Start DoWork");
             base.IsRunning = true;
             this.DoWork();
             //this.RepeatMessage += this.SignalRMessageRepeaterService_RepeatMessage;
@@ -74,37 +75,37 @@ namespace SignalRSelfHost.BackgroundServices
         //    });
         //}
 
-        private void DoWork()
-        {
-            this._taskQueue.QueueBackgroundWorkItem(async token =>
-            {
-                while (base.IsRunning)
-                {
-                    List<string> activeConnection = this._connectionManager.GetActiveConnectionForHub("TestHub");
-                    if (activeConnection != null)
-                    {
-                        if (this._testHub == null)
-                        {
-                            continue;
-                        }
-                        await this._testHub.Clients.Clients(activeConnection).SendAsync("SomeEvent", new EventMessage() { Message = "Test Message From Repeater Background Service" });
-                    }
-                    Thread.Sleep(3000);
-                }
-            });
-        }
-
         //private void DoWork()
         //{
-        //    while (IsRunning)
+        //    this._taskQueue.QueueBackgroundWorkItem(async token =>
         //    {
-        //        List<string> activeConnection = this._connectionManager.GetActiveConnectionForHub("TestHub");
-        //        if (activeConnection != null)
+        //        while (base.IsRunning)
         //        {
-        //            this._testHub.Clients.Clients(activeConnection).SendAsync("SomeEvent", new EventMessage() { Message = "Test Message From Repeater Background Service" });
+        //            List<string> activeConnection = this._connectionManager.GetActiveConnectionForHub("TestHub");
+        //            if (activeConnection != null)
+        //            {
+        //                if (this._testHub == null)
+        //                {
+        //                    continue;
+        //                }
+        //                await this._testHub.Clients.Clients(activeConnection).SendAsync("SomeEvent", new EventMessage() { Message = "Test Message From Repeater Background Service" });
+        //            }
+        //            Thread.Sleep(3000);
         //        }
-        //        Thread.Sleep(3000);
-        //    }
+        //    });
         //}
+
+        private void DoWork()
+        {
+            while (IsRunning)
+            {
+                List<string> activeConnection = this._connectionManager.GetActiveConnectionForHub("TestHub");
+                if (activeConnection != null)
+                {
+                    this._testHub.Clients.Clients(activeConnection).SendAsync("SomeEvent", new EventMessage() { Message = "Test Message From Repeater Background Service" });
+                }
+                Thread.Sleep(3000);
+            }
+        }
     }
 }

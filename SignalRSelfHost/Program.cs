@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.ServiceProcess;
 using BusinessLayer.BackgroundServices.Queue;
 using BusinessLayer.Core;
 using Microsoft.AspNetCore;
@@ -10,16 +8,33 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Shared.Models;
 using SignalRSelfHost.BackgroundServices;
 using SignalRSelfHost.Connection;
 using SignalRSelfHost.Hubs;
-using SignalRSelfHost.IoC;
 
 namespace SignalRSelfHost
 {
-    class Program
+    public class Program
     {
+        public const string ServiceName = "MyService";
+
+        public class Service : ServiceBase
+        {
+            public Service()
+            {
+                ServiceName = Program.ServiceName;
+            }
+
+            protected override void OnStart(string[] args)
+            {
+                Program.Start();
+            }
+
+            protected override void OnStop()
+            {
+                Program.Stop();
+            }
+        }
         private static IServiceProvider serviceProvider { get; set; }
 
         private static ILogger Logger
@@ -49,10 +64,21 @@ namespace SignalRSelfHost
             host.RunAsync();
             serviceProvider = host.Services;
 
-            Start();
-            
-            Console.Write("Press <Enter> to exit... ");
-            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+            if (!Environment.UserInteractive)
+                // running as service
+                using (var service = new Service())
+                    ServiceBase.Run(service);
+            else
+            {
+                // running as console app
+
+                Start();
+
+                Console.WriteLine("Press any key to stop...");
+                Console.ReadKey(true);
+
+                Stop();
+            }
         }
 
         static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
@@ -70,20 +96,21 @@ namespace SignalRSelfHost
             messageRepeater?.Stop();
         }
 
-        static void Start()
+        private static void Start()
         {
-            Queue.QueueBackgroundWorkItem(async token =>
-            {
-                Logger.LogInformation($"Self Host SignalR Application Start");
-                await Task.CompletedTask;
-            });
-           
+            Logger.LogInformation($"Self Host SignalR Application Start");
+
             var messageRepeater = new SignalRMessageRepeaterService(serviceProvider.GetService<IBackgroundTaskQueue>(),
                                                     serviceProvider.GetService<ILogProvider>(), serviceProvider.GetService<IHubContext<TestHub>>(),
                                                     serviceProvider.GetService<IConnectionManager>());
 
 
             messageRepeater?.Start();
+        }
+
+        private static void Stop()
+        {
+            Logger.LogInformation($"Self Host SignalR Application Stop");
         }
 
         static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
